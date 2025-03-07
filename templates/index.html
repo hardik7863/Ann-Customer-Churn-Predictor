@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Churn Prediction</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --success: #4CAF50;
+            --danger: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 40px 0;
+            color: var(--dark);
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s ease;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .header h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .header h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--primary));
+            border-radius: 2px;
+        }
+        
+        .header p {
+            color: #6c757d;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 10px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+            transition: var(--transition);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background-color: #fff;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
+        }
+        
+        .form-control:hover {
+            border-color: #ced4da;
+        }
+        
+        .slider-container {
+            position: relative;
+            margin-top: 10px;
+            padding: 0 10px;
+        }
+        
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #e9ecef;
+            outline: none;
+            transition: var(--transition);
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+        }
+        
+        .slider::-webkit-slider-thumb:hover {
+            background: var(--secondary);
+            transform: scale(1.1);
+        }
+        
+        .slider-value {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            min-width: 40px;
+            text-align: center;
+            opacity: 0;
+            transition: var(--transition);
+        }
+        
+        .slider-value:after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--primary) transparent transparent transparent;
+        }
+        
+        .slider-container:hover .slider-value {
+            opacity: 1;
+            top: -40px;
+        }
+        
+        select.form-control {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234361ee' width='18px' height='18px'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        
+        .btn-primary {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 30px auto;
+            padding: 15px 25px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.5);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-primary i {
+            margin-right: 8px;
+        }
+        
+        .btn-primary:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 1;
+            }
+            20% {
+                transform: scale(25, 25);
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: scale(40, 40);
+            }
+        }
+        
+        .btn-primary:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            opacity: 0;
+            transition: all 0.5s ease-out;
+            transform: translateY(20px);
+            height: 0;
+            overflow: hidden;
+        }
+        
+        .result-container.active {
+            opacity: 1;
+            transform: translateY(0);
+            height: auto;
+            padding: 25px;
+            border-radius: 12px;
+            animation: slideIn 0.5s forwards;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result {
+            padding: 25px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .result.churn {
+            background-color: rgba(247, 37, 133, 0.1);
+            border-left: 5px solid var(--danger);
+        }
+        
+        .result.no-churn {
+            background-color: rgba(76, 201, 240, 0.1);
+            border-left: 5px solid var(--accent);
+        }
+        
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .result-title i {
+            margin-right: 10px;
+            font-size: 1.8rem;
+        }
+        
+        .churn .result-title {
+            color: var(--danger);
+        }
+        
+        .no-churn .result-title {
+            color: var(--accent);
+        }
+        
+        .result-value {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        
+        .probability-container {
+            margin-top: 20px;
+        }
+        
+        .probability-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .probability-bar {
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .probability-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 1.5s cubic-bezier(0.26, 0.86, 0.44, 0.98);
+            width: 0;
+        }
+        
+        .churn .probability-fill {
+            background: linear-gradient(90deg, #f9c74f, #f72585);
+        }
+        
+        .no-churn .probability-fill {
+            background: linear-gradient(90deg, #4cc9f0, #4361ee);
+        }
+        
+        .feature-importance {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .feature-importance h3 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            color: #495057;
+        }
+        
+        .feature-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .feature-name {
+            font-weight: 500;
+        }
+        
+        .feature-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        /* Loading spinner */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .spinner {
+            width: 70px;
+            text-align: center;
+        }
+        
+        .spinner > div {
+            width: 18px;
+            height: 18px;
+            background-color: var(--primary);
+            border-radius: 100%;
+            display: inline-block;
+            animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+        }
+        
+        .spinner .bounce1 {
+            animation-delay: -0.32s;
+        }
+        
+        .spinner .bounce2 {
+            animation-delay: -0.16s;
+        }
+        
+        .spinner .bounce3 {
+            animation-delay: 0s;
+        }
+        
+        @keyframes sk-bouncedelay {
+            0%, 80%, 100% { 
+                transform: scale(0);
+            } 40% { 
+                transform: scale(1.0);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+        
+        /* Dark mode toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 30px;
+            background: var(--light);
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            transition: var(--transition);
+        }
+        
+        .theme-toggle-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            position: relative;
+            left: 0;
+            transition: var(--transition);
+        }
+        
+        /* Dark mode styles */
+        body.dark-mode {
+            color: var(--light);
+        }
+        
+        body.dark-mode .form-label {
+            color: #e9ecef;
+        }
+        
+        body.dark-mode .form-control {
+            background-color: #2a2d3e;
+            color: #e9ecef;
+            border-color: #3a3f53;
+        }
+        
+        body.dark-mode .form-control:hover {
+            border-color: #4d5367;
+        }
+        
+        body.dark-mode select.form-control {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234cc9f0' width='18px' height='18px'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <div class="theme-toggle" id="themeToggle">
+                    <div class="theme-toggle-thumb"></div>
+                </div>
+                <h1><i class="fas fa-chart-line"></i> Customer Churn Prediction</h1>
+                <p>Advanced machine learning analysis to predict customer behavior</p>
+            </div>
+            
+            <form method="POST" id="predictionForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="geography">
+                            <i class="fas fa-globe-americas"></i> Geography
+                        </label>
+                        <select class="form-control" id="geography" name="geography" required>
+                            <option value="France">France</option>
+                            <option value="Germany">Germany</option>
+                            <option value="Spain">Spain</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="gender">
+                            <i class="fas fa-user"></i> Gender
+                        </label>
+                        <select class="form-control" id="gender" name="gender" required>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="age">
+                            <i class="fas fa-birthday-cake"></i> Age
+                        </label>
+                        <div class="slider-container">
+                            <span class="slider-value" id="age-value">30</span>
+                            <input type="range" class="slider" id="age" name="age" min="18" max="92" value="30">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="balance">
+                            <i class="fas fa-wallet"></i> Balance
+                        </label>
+                        <input type="number" class="form-control" id="balance" name="balance" step="0.01" placeholder="Enter account balance" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="credit_score">
+                            <i class="fas fa-credit-card"></i> Credit Score
+                        </label>
+                        <input type="number" class="form-control" id="credit_score" name="credit_score" placeholder="Enter credit score" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="estimated_salary">
+                            <i class="fas fa-money-bill-wave"></i> Estimated Salary
+                        </label>
+                        <input type="number" class="form-control" id="estimated_salary" name="estimated_salary" step="0.01" placeholder="Enter estimated salary" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="tenure">
+                            <i class="fas fa-hourglass-half"></i> Tenure (Years)
+                        </label>
+                        <div class="slider-container">
+                            <span class="slider-value" id="tenure-value">5</span>
+                            <input type="range" class="slider" id="tenure" name="tenure" min="0" max="10" value="5">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="num_of_products">
+                            <i class="fas fa-shopping-basket"></i> Number of Products
+                        </label>
+                        <div class="slider-container">
+                            <span class="slider-value" id="products-value">1</span>
+                            <input type="range" class="slider" id="num_of_products" name="num_of_products" min="1" max="4" value="1">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="has_cr_card">
+                            <i class="far fa-credit-card"></i> Has Credit Card
+                        </label>
+                        <select class="form-control" id="has_cr_card" name="has_cr_card" required>
+                            <option value="1">Yes</option>
+                            <option value="0">No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="is_active_member">
+                            <i class="fas fa-user-check"></i> Is Active Member
+                        </label>
+                        <select class="form-control" id="is_active_member" name="is_active_member" required>
+                            <option value="1">Yes</option>
+                            <option value="0">No</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-primary" id="predictBtn">
+                    <i class="fas fa-chart-line"></i> Predict Customer Behavior
+                </button>
+            </form>
+            
+            <div class="result-container" id="resultContainer"></div>
+        </div>
+    </div>
+    
+    <div class="loading" id="loadingSpinner">
+        <div class="spinner">
+            <div class="bounce1"></div>
+            <div class="bounce2"></div>
+            <div class="bounce3"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Update slider value displays
+        const sliders = document.querySelectorAll('.slider');
+        sliders.forEach(slider => {
+            const valueDisplay = document.getElementById(`${slider.id}-value`);
+            
+            // Set initial value
+            if (valueDisplay) {
+                valueDisplay.textContent = slider.value;
+            }
+            
+            // Update on input
+            slider.addEventListener('input', function() {
+                if (valueDisplay) {
+                    valueDisplay.textContent = this.value;
+                }
+            });
+        });
+        
+        // Special handling for products slider
+        const productsSlider = document.getElementById('num_of_products');
+        const productsValue = document.getElementById('products-value');
+        if (productsSlider && productsValue) {
+            productsValue.textContent = productsSlider.value;
+            productsSlider.addEventListener('input', function() {
+                productsValue.textContent = this.value;
+            });
+        }
+        
+        // Form submission animation and mock prediction
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent actual form submission for demo
+            
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            loadingSpinner.style.display = 'flex';
+            
+            // Simulate API call with timeout
+            setTimeout(() => {
+                loadingSpinner.style.display = 'none';
+                showPredictionResult();
+            }, 1500);
+        });
+        
+        // Function to show prediction result
+        function showPredictionResult() {
+            const resultContainer = document.getElementById('resultContainer');
+            
+            // Get form values
+            const age = document.getElementById('age').value;
+            const balance = document.getElementById('balance').value;
+            const geography = document.getElementById('geography').value;
+            const numProducts = document.getElementById('num_of_products').value;
+            const isActiveMember = document.getElementById('is_active_member').value;
+            
+            // Simple mock prediction based on some criteria
+            // In real app, this would come from server or ML model
+            const churnProbability = isActiveMember === '0' ? 0.75 : 0.35;
+            const isChurn = churnProbability > 0.5;
+            
+            // Create result HTML
+            resultContainer.innerHTML = `
+                <div class="result ${isChurn ? 'churn' : 'no-churn'}">
+                    <h2 class="result-title">
+                        ${isChurn ? 
+                            '<i class="fas fa-user-slash"></i> Churn Risk Detected' : 
+                            '<i class="fas fa-user-check"></i> Customer Likely to Stay'
+                        }
+                    </h2>
+                    
+                    <p class="result-value">
+                        ${isChurn ? 
+                            'Our analysis indicates this customer has a high probability of churning.' : 
+                            'Our analysis indicates this customer is likely to remain with your service.'
+                        }
+                    </p>
+                    
+                    <div class="probability-container">
+                        <div class="probability-label">
+                            <span>Churn Probability</span>
+                            <span>${churnProbability.toFixed(2)}</span>
+                        </div>
+                        <div class="probability-bar">
+                            <div class="probability-fill" id="probabilityFill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-importance">
+                        <h3><i class="fas fa-chart-pie"></i> Key Factors</h3>
+                        <div class="feature-item">
+                            <span class="feature-name">Age</span>
+                            <span class="feature-value">${age}</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-name">Balance</span>
+                            <span class="feature-value">$${parseFloat(balance).toFixed(2)}</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-name">Geography</span>
+                            <span class="feature-value">${geography}</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-name">Products</span>
+                            <span class="feature-value">${numProducts}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Show result container with animation
+            resultContainer.className = 'result-container active';
+            
+            // Animate probability bar after a short delay
+            setTimeout(() => {
+                const probabilityFill = document.getElementById('probabilityFill');
+                if (probabilityFill) {
+                    probabilityFill.style.width = `${churnProbability * 100}%`;
+                }
+            }, 300);
+        }
+        
+        // Dark mode toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        const card = document.querySelector('.card');
+        
+        themeToggle.addEventListener('click', function() {
+            body.classList.toggle('dark-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                // Switch to dark mode
+                document.documentElement.style.setProperty('--light', '#212529');
+                document.documentElement.style.setProperty('--dark', '#f8f9fa');
+                body.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)';
+                card.style.background = 'rgba(30, 32, 44, 0.95)';
+                themeToggle.style.background = '#212529';
+                themeToggle.querySelector('.theme-toggle-thumb').style.left = '35px';
+            } else {
+                // Switch to light mode
+                document.documentElement.style.setProperty('--light', '#f8f9fa');
+                document.documentElement.style.setProperty('--dark', '#212529');
+                body.style.background = 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)';
+                card.style.background = 'rgba(255, 255, 255, 0.95)';
+                themeToggle.style.background = '#f8f9fa';
+                themeToggle.querySelector('.theme-toggle-thumb').style.left = '0';
+            }
+        });
+    </script>
+</body>
+</html>
