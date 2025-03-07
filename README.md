@@ -35,7 +35,7 @@ This project is a web application that predicts customer churn using a trained A
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/your-repo-name.git
+    git clone https://github.com/hardik7863/Ann-Customer-Churn-Predictor.git
     cd your-repo-name
     ```
 
