@@ -1,4 +1,3 @@
-
 # Customer Churn Prediction
 
 This project is a web application that predicts customer churn using a trained Artificial Neural Network (ANN) model. The application is built using Flask for the backend and Streamlit for the frontend.
@@ -68,6 +67,12 @@ This project is a web application that predicts customer churn using a trained A
 - The training process and hyperparameter tuning are documented in the 1-experiments.ipynb and hyperparametertuningann.ipynb notebooks.
 - The trained model and encoders are saved as model.h5, label_encoder_gender.pkl, onehot_encoder_geo.pkl, and scaler.pkl.
 
+## Deployment
+
+The application is deployed using Streamlit. You can access the live application at the following link:
+
+[Customer Churn Prediction App](https://hardik7863-ann-customer-churn-predictor-streamlitapp-wdvli9.streamlit.app/)
+
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
@@ -81,4 +86,3 @@ This project is licensed under the MIT License. See the LICENSE file for details
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
-# Ann-Customer-Churn-Predictor
